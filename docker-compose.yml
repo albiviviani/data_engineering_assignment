@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - /tmp/mongo_db:/data/db
+    networks:
+      - etl-network
+
+  etl-app:
+    image: etl_app:latest
+    container_name: etl_app
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "etl_app/main.py"]
+    environment:
+      MONGODB_DATABASE: db
+      MONGODB_HOSTNAME: mongo
+    depends_on:
+      - mongo
+    volumes:
+      - /tmp/etl_app_volume:/src
+    networks:
+      - etl-network
+
+networks:
+  etl-network:
+    driver: bridge
